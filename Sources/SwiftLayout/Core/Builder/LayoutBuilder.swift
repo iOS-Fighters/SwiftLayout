@@ -31,40 +31,8 @@ extension LayoutBuilder {
         layout
     }
     
-    public static func buildBlock<L: Layout, L1: Layout>(_ l: L, _ l1: L1) -> some Layout {
-        ListLayout(l, ListLayout(l1))
-    }
-    
-    public static func buildBlock<L: Layout, L1: Layout, L2: Layout>(_ l: L, _ l1: L1, _ l2: L2) -> some Layout {
-        ListLayout(l, ListLayout(l1, ListLayout(l2)))
-    }
-    
-    public static func buildBlock<L: Layout, L1: Layout, L2: Layout, L3: Layout>(_ l: L, _ l1: L1, _ l2: L2, _ l3: L3) -> some Layout {
-        ListLayout(l, ListLayout(l1, ListLayout(l2, ListLayout(l3))))
-    }
-    
-    public static func buildBlock<L: Layout, L1: Layout, L2: Layout, L3: Layout, L4: Layout>(_ l: L, _ l1: L1, _ l2: L2, _ l3: L3, _ l4: L4) -> some Layout {
-        ListLayout(l, ListLayout(l1, ListLayout(l2, ListLayout(l3, ListLayout(l4)))))
-    }
-    
-    public static func buildBlock<L: Layout, L1: Layout, L2: Layout, L3: Layout, L4: Layout, L5: Layout>(_ l: L, _ l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5) -> some Layout {
-        ListLayout(l, ListLayout(l1, ListLayout(l2, ListLayout(l3, ListLayout(l4, ListLayout(l5))))))
-    }
-    
-    public static func buildBlock<L: Layout, L1: Layout, L2: Layout, L3: Layout, L4: Layout, L5: Layout, L6: Layout>(_ l: L, _ l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5, _ l6: L6) -> some Layout {
-        ListLayout(l, ListLayout(l1, ListLayout(l2, ListLayout(l3, ListLayout(l4, ListLayout(l5, ListLayout(l6)))))))
-    }
-    
-    public static func buildBlock<L: Layout, L1: Layout, L2: Layout, L3: Layout, L4: Layout, L5: Layout, L6: Layout, L7: Layout>(_ l: L, _ l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5, _ l6: L6, _ l7: L7) -> some Layout {
-        ListLayout(l, ListLayout(l1, ListLayout(l2, ListLayout(l3, ListLayout(l4, ListLayout(l5, ListLayout(l6, ListLayout(l7))))))))
-    }
-    
-    public static func buildBlock<L: Layout, L1: Layout, L2: Layout, L3: Layout, L4: Layout, L5: Layout, L6: Layout, L7: Layout, L8: Layout>(_ l: L, _ l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5, _ l6: L6, _ l7: L7, _ l8: L8) -> some Layout {
-        ListLayout(l, ListLayout(l1, ListLayout(l2, ListLayout(l3, ListLayout(l4, ListLayout(l5, ListLayout(l6, ListLayout(l7, ListLayout(l8)))))))))
-    }
-    
-    public static func buildBlock<L: Layout, L1: Layout, L2: Layout, L3: Layout, L4: Layout, L5: Layout, L6: Layout, L7: Layout, L8: Layout, L9: Layout>(_ l: L, _ l1: L1, _ l2: L2, _ l3: L3, _ l4: L4, _ l5: L5, _ l6: L6, _ l7: L7, _ l8: L8, _ l9: L9) -> some Layout {
-        ListLayout(l, ListLayout(l1, ListLayout(l2, ListLayout(l3, ListLayout(l4, ListLayout(l5, ListLayout(l6, ListLayout(l7, ListLayout(l8, ListLayout(l9))))))))))
+    public static func buildBlock<each L: Layout>(_ l: repeat each L) -> some Layout {
+        return TupleLayout(layout: (repeat each L).self)
     }
     
     public static func buildArray<L: Layout>(_ components: [L]) -> ArrayLayout<L> {
@@ -89,5 +57,21 @@ extension LayoutBuilder {
     
     public static func buildLimitedAvailability<L: Layout>(_ component: L) -> AnyLayout {
         AnyLayout(component)
+    }
+}
+
+struct TupleLayout<L>: Layout {
+    let layout: L
+    
+    var sublayouts: [any Layout] {
+        let mirror = Mirror(reflecting: self.layout)
+        var layouts: [any Layout] = []
+        for child in mirror.children {
+            guard let layout = child.value as? Layout else {
+                continue
+            }
+            layouts.append(layout)
+        }
+        return layouts
     }
 }
